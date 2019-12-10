@@ -1,4 +1,4 @@
-from day2 import intcode
+from day2_pt1 import intcode
 
 
 def test_add():
