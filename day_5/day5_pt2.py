@@ -77,14 +77,14 @@ def jump_if_false(params, modes, values, current, puzzle_input):
     the value from the second parameter. Otherwise, it does nothing.
     """
     if values[0] == 0:
-        print(f"modes[1]: {modes[1]}")
+        # print(f"modes[1]: {modes[1]}")
         if modes[1] == 0:
-            print(f"puzzle_input[params[1]]: {puzzle_input[params[1]]}")
+            # print(f"puzzle_input[params[1]]: {puzzle_input[params[1]]}")
             current = puzzle_input[params[1]]
-            print(f"current: {current}")
-            print(f"puzzle_input[current]: {current}")
+            # print(f"current: {current}")
+            # print(f"puzzle_input[current]: {current}")
         elif modes[1] == 1:
-            print(f"params[1]: {params[1]}")
+            # print(f"params[1]: {params[1]}")
             current = params[1]
     return current
 
@@ -94,12 +94,12 @@ def jump_if_true(params, modes, values, current, puzzle_input):
     the value from the second parameter. Otherwise, it does nothing.
     """
     if values[0] != 0:
-        print(f"modes[1]: {modes[1]}")
+        # print(f"modes[1]: {modes[1]}")
         if modes[1] == 0:
-            print(f"puzzle_input[params[1]: {puzzle_input[params[1]]}")
+            # print(f"puzzle_input[params[1]: {puzzle_input[params[1]]}")
             current = puzzle_input[params[1]]
         elif modes[1] == 1:
-            print(f"params[1]: {params[1]}")
+            # print(f"params[1]: {params[1]}")
             current = params[1]
     return current
 

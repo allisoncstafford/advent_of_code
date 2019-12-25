@@ -1,4 +1,4 @@
-from day5_pt1 import *
+from day5_pt1 import parse_instruction
 
 def test_parse_instruction0():
     assert parse_instruction([12345, 1, 2], 0)[0] == '45', "Should be last two digits"
