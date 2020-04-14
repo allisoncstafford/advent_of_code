@@ -1,6 +1,62 @@
-import numpy as np
+import sys
+sys.path.append('/Users/allisonhonold/ds0805/advent_of_code')
 
-def intcode_comp(puzzle_input):
+from day_5.day5_pt2 import get_input
+from itertools import permutations
+
+def get_permutations(min, max):
+    """creates a list of tuples, each a permutation of the numbers between 
+    min and max inclusive.
+    """
+    nums = list(range(min, max+1))
+    return list(permutations(nums))
+
+
+def calculate_output(phase_setting_list, intcode_input):
+    """Calculates the output when the intocode is run four times with the 
+    settings given by phase_setting_list and the input starting with 0, and
+    then each output providing the input value for the next stage.
+    """
+    input_signal = 0
+    for i in range(len(phase_setting_list)):
+        input_signal = intcode_comp(intcode_input, phase_setting_list[i], 
+                                    input_signal)
+    return input_signal
+
+
+def main():
+    # read input
+    puzzle_input = get_input('day7_input.txt')
+
+    # determine combinations of phase settings
+    phase_settings = get_permutations(0,4)
+
+    # test each set of phase settings, collecting output numbers
+    outputs = []
+    for phase_setting in phase_settings:
+        output = calculate_output(phase_setting, puzzle_input)
+        outputs.append(output)
+
+    # print max output number
+    print(max(outputs))
+
+
+def t(puzzle_input):
+    """main for testing purposes"""
+    # determine combinations of phase settings
+    phase_settings = get_permutations(0,4)
+
+    # test each set of phase settings, collecting output numbers
+    outputs = []
+    for phase_setting in phase_settings:
+        output = calculate_output(phase_setting, puzzle_input)
+        outputs.append(output)
+
+    # print max output number
+    return(max(outputs))
+
+
+def intcode_comp(puzzle_input, phase_setting, input_signal):
     """Compute based on the intcode instructions below
     # position mode:
         # 1: positional add
@@ -17,27 +73,33 @@ def intcode_comp(puzzle_input):
         opcode: rightmost 2 digits
         parameter mode: one per parameter read right to left
     """
+    # mark current location in puzzle input
     current = 0
+
+    # mark whether input is on step 0 (phase setting) or 1 (input sig)
+    step = 0
 
     while (True):
         prev_current = current
         prev_instruction = puzzle_input[prev_current]
         opcode, modes, current = parse_instruction(puzzle_input, current)
-        # print(f'opcode: {opcode}, modes: {modes}, current: {current}')
         if opcode == '99':
             break
         params, current = get_parameters(current, puzzle_input, opcode)
-        # print(f'params: {params}, current: {current}')
         values = get_values(modes, params, puzzle_input)
-        # print(f'values: {values}')
         if opcode == '01':
             puzzle_input = add(values, puzzle_input)
         elif opcode == '02':
             puzzle_input = multiply(values, puzzle_input)
         elif opcode =='03':
-            puzzle_input = get_user_input(values, puzzle_input)
+            if step == 0:
+                u_input = phase_setting
+            elif step == 1:
+                u_input = input_signal
+            puzzle_input = process_input(values, puzzle_input, u_input)
+            step += 1
         elif opcode == '04':
-            output(values, puzzle_input)
+            output = get_output(values, puzzle_input)
         elif opcode == '05':
             current = jump_if_true(params, modes, values, current, puzzle_input)
         elif opcode == '06':
@@ -48,6 +110,7 @@ def intcode_comp(puzzle_input):
             puzzle_input = equals(values, puzzle_input)
         if prev_instruction != puzzle_input[prev_current]:
             current = prev_current
+    return output
 
 
 def equals(values, puzzle_input):
@@ -122,19 +185,18 @@ def multiply(values, puzzle_input):
     return puzzle_input   
 
 
-def get_user_input(values, puzzle_input):
+def process_input(values, puzzle_input, u_input):
     """Takes input from the user and records them in the location specified
     by the "value", and returns the resulting puzzle input
     """
-    user_input = int(input('enter the value: '))
-    puzzle_input[values[0]] = user_input
+    puzzle_input[values[0]] = u_input
     return puzzle_input
 
 
-def output(values, puzzle_input):
-    """outputs the "value"
+def get_output(values, puzzle_input):
+    """returns the value for output
     """
-    print(f'output value: {puzzle_input[values[0]]}')
+    return puzzle_input[values[0]]
 
 
 def parse_instruction(puzzle_input, current):
@@ -179,30 +241,6 @@ def get_values(modes, params, puzzle_input):
             values.append(param)
     values.append(loc)
     return values
-
-
-
-def get_input(filename):
-    """returns list of inputs from data file. File should have integer values, 
-    separated by commas
-
-    Args:
-        filename: the name of the file with the input data.
-
-    Returns:
-        a list of integers read from the file
-    """
-    text_file = open(filename, "r")
-    input_str = text_file.readlines()
-    text_file.close()
-    input_list = input_str[0].split(',')
-    input_ints = list(map(int, input_list))
-    return input_ints
-
-
-def main():
-    puzzle_input = get_input('day5_input.txt')
-    intcode_comp(puzzle_input)
 
 
 if __name__ == "__main__":
