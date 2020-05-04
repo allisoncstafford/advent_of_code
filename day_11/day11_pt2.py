@@ -4,6 +4,7 @@ sys.path.append('/Users/allisonhonold/ds0805/advent_of_code')
 from day_5.day5_pt2 import get_input
 from intcode11 import IntcodeComp
 import numpy as np
+from matplotlib import pyplot as plt
 
 class Painter():
     def __init__(self):
@@ -13,6 +14,8 @@ class Painter():
         self.canvas = np.zeros((10, 10, 2), dtype=bool)
         self.loc = [5, 5]
         self.direction = 'up'
+        # set starting color to white
+        self.canvas[self.loc[0], self.loc[1], 0] = 1
 
     def get_count(self):
         count = 0
@@ -53,43 +56,53 @@ class Painter():
     def step_forward(self):
         "adjusts the location for a single step forward"
         canvas_shape = self.canvas.shape
-        if self.direction == 'up':
-            # if at edge of canvas, increase canvas size
-            if self.loc[1] == (canvas_shape[1] - 1):
-                a = np.zeros((canvas_shape[0], 10, 2), dtype=bool)
-                self.canvas = np.concatenate((self.canvas, a), axis=1)
+        
+        # if at edge of canvas, increase canvas size
+        if (self.loc[0] in (1, canvas_shape[0]-2) 
+            or self.loc[1] in (1, canvas_shape[1]-2)):
+            self.expand_canvas()
 
+        if self.direction == 'up':
             # increase location y by one
             self.loc[1] += 1
 
         if self.direction == 'left':
-            # if at edge of canvas, increase canvas size
-            if self.loc[0] == 0:
-                a = np.zeros((10, canvas_shape[1], 2), dtype=bool)
-                self.canvas = np.concatenate((a, self.canvas), axis=0)
-                self.loc[0] += 10
-
             # increase location y by one
             self.loc[0] -= 1
 
         if self.direction == 'down':
-            # if at edge of canvas, increase canvas size
-            if self.loc[1] == 0:
-                a = np.zeros((canvas_shape[0], 10, 2), dtype=bool)
-                self.canvas = np.concatenate((a, self.canvas), axis=1)
-                self.loc[1] +=10
-
             # increase location y by one
             self.loc[1] -= 1
 
         if self.direction == 'right':
-            # if at edge of canvas, increase canvas size
-            if self.loc[0] == (canvas_shape[1] - 1):
-                a = np.zeros((10, canvas_shape[1], 2), dtype=bool)
-                self.canvas = np.concatenate((self.canvas, a), axis=0)
-
             # increase location y by one
             self.loc[0] += 1
+
+    def expand_canvas(self):
+        """expands the canvas by 10 in the direction where loc is within 1 of 
+        the edge. adjusts loc to reflect the larger canvas if needed"""
+        canvas_shape = self.canvas.shape
+        # if loc at top of canvas expand top
+        if self.loc[1] == (canvas_shape[1] - 2):
+            a = np.zeros((canvas_shape[0], 10, 2), dtype=bool)
+            self.canvas = np.concatenate((self.canvas, a), axis=1)
+
+        # if loc at left of canvas expand left
+        elif self.loc[0] == 1:
+            a = np.zeros((10, canvas_shape[1], 2), dtype=bool)
+            self.canvas = np.concatenate((a, self.canvas), axis=0)
+            self.loc[0] += 10 #adjust loc to reflect change
+
+        # if loc at bottom of canvas expand down
+        elif self.loc[1] == 1:
+            a = np.zeros((canvas_shape[0], 10, 2), dtype=bool)
+            self.canvas = np.concatenate((a, self.canvas), axis=1)
+            self.loc[1] +=10 # adjust loc to reflect change
+
+        # if loc at right of canvas, expand right
+        elif self.loc[0] == (canvas_shape[0] - 2):
+            a = np.zeros((10, canvas_shape[1], 2), dtype=bool)
+            self.canvas = np.concatenate((self.canvas, a), axis=0)
 
         
     def paint(self, color: bool):
@@ -105,10 +118,11 @@ class Painter():
         return self.canvas[self.loc[0], self.loc[1], 0]
         
         
-
+def display_pixels(arr):
+    image = arr.reshape((arr.shape[0], arr.shape[1]))
+    plt.matshow(image)
+    plt.show()
     
-
-
 
 def main():
     # read input
@@ -132,7 +146,7 @@ def main():
         painter.move(turn)
 
     # print the number of panels painted at least once
-    print(painter.get_count())
+    display_pixels(painter.canvas[:,:,0])
 
 
 if __name__ == "__main__":
