@@ -52,14 +52,8 @@ def apply_velocities(pos_vels):
     return pos_vels
 
 
-def main():
-    # read input positions
-    lines = read_input('input.txt')
-    pos_vels = extract_positions(lines)
-
-    # add starting velocities to positions
-    pos_vels.extend([0]*12)
-
+def parse_dimensions(pos_vels):
+    "separate the x, y, and z components from input list"
     x0s = []
     y0s = []
     z0s = []
@@ -71,24 +65,53 @@ def main():
             y0s.append(n)
         if i % 3 == 2:
             z0s.append(n)
-
-    # count cycle time for x
-    count_x = 0
     
-    xs = x0s
+    return x0s, y0s, z0s
+
+
+def calc_cycle(pos_vels0):
+    "calculates the cycle time for a single dimension"
+    count = 0
+    pos_vels = pos_vels0.copy()
+
     while True:
-        xs = apply_gravity(xs)
-        xs = apply_velocities(xs)
-        count_x += 1
-        if xs == x0s:
+        pos_vels = apply_gravity(pos_vels)
+        pos_vels = apply_velocities(pos_vels)
+        count += 1
+        if pos_vels == pos_vels0:
             break
+    
+    return count
 
 
-    # count cycle time for y
+def gcd(a, b):
+    """Return greatest common divisor using Euclid's Algorithm."""
+    while b:      
+        a, b = b, a % b
+    return a
 
-    # count cycle time for z
+def lcm(a, b):
+    """Return lowest common multiple."""
+    return a * b // gcd(a, b)
+
+
+def main():
+    # read input positions
+    lines = read_input('input.txt')
+    pos_vels = extract_positions(lines)
+
+    # add starting velocities to positions
+    pos_vels.extend([0]*12)
+
+    x0s, y0s, z0s = parse_dimensions(pos_vels)
+
+    # count cycle times
+    x_cycle = calc_cycle(x0s)
+    y_cycle = calc_cycle(y0s)
+    z_cycle = calc_cycle(z0s)
 
     # find lowest common denomenator btwen x, y, z
+    print(lcm(x_cycle, lcm(y_cycle, z_cycle)))
 
 
 
